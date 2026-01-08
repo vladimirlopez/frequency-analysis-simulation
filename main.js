@@ -26,6 +26,7 @@ const decodedDisplay = document.getElementById('decoded-display');
 const langLabel = document.getElementById('current-lang-label');
 const resetBtn = document.getElementById('reset-btn');
 const sampleBtn = document.getElementById('sample-btn');
+const copyBtn = document.getElementById('copy-btn');
 
 const samples = {
     en: "YKTJXTEBN QFQSNLOL OL WQLTR GF ZIT YQTZ ZIQZ, OF QFN UOCEF LZKTZEI GY VKOZZTF SQFUXQUT, ETKZQOF STZZTKL QFR EGDWOFQZOGFL GY STZZTKL GEEXK VOZI CQKN OFU YKTJXTEBORTL. DGKTGCTK, ZITKT OL Q EIQKQEZTKOLZOE ROLLZKOXXZOGF GY STZZTKL ZIQZ OL KGXUISH ZIT LQDT YGK QSDGLZ QSS LQDRSTL GY ZIQZ SQFUXQUT.",
@@ -180,6 +181,17 @@ function attachEventListeners() {
         inputText.value = samples[lang] || samples['en'];
         updateCharts();
         updateDecodedDisplay();
+    });
+
+    copyBtn.addEventListener('click', () => {
+        const text = decodedDisplay.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+            }, 2000);
+        });
     });
 }
 

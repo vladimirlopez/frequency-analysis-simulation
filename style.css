@@ -151,6 +151,22 @@ select.btn {
     background-position: right 10px center;
 }
 
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}
+
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.view-header label {
+    margin-bottom: 0;
+}
+
 /* Frequency Charts */
 .charts-container {
     display: flex;
