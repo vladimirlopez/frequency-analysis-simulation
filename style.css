@@ -15,6 +15,13 @@
     --chart-bar-bg: #21262d;
 
     --mapped-color: #3fb950;
+    --accent-glow: #58a6ff33;
+}
+
+.accent-text {
+    color: var(--accent-primary);
+    font-weight: bold;
+    font-family: var(--font-mono);
 }
 
 * {
@@ -232,17 +239,30 @@ select.btn {
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    padding: 6px;
+    padding: 8px 4px;
+}
+
+.sub-item-inner {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .sub-item label {
-    font-size: 12px;
-    margin-bottom: 4px;
+    font-size: 14px;
+    margin-bottom: 0px;
     color: var(--accent-primary);
+    font-weight: bold;
+    font-family: var(--font-mono);
+}
+
+.sub-arrow {
+    font-size: 10px;
+    color: var(--text-dim);
 }
 
 .sub-input {
-    width: 30px;
+    width: 24px;
     text-align: center;
     background: transparent;
     border: none;

@@ -47,8 +47,15 @@ function setupSubstitutionGrid() {
         const item = document.createElement('div');
         item.className = 'sub-item';
 
+        const inner = document.createElement('div');
+        inner.className = 'sub-item-inner';
+
         const label = document.createElement('label');
         label.textContent = char;
+
+        const arrow = document.createElement('span');
+        arrow.className = 'sub-arrow';
+        arrow.textContent = '→';
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -68,8 +75,10 @@ function setupSubstitutionGrid() {
             updateDecodedDisplay();
         });
 
-        item.appendChild(label);
-        item.appendChild(input);
+        inner.appendChild(label);
+        inner.appendChild(arrow);
+        inner.appendChild(input);
+        item.appendChild(inner);
         substitutionGrid.appendChild(item);
     });
 }
