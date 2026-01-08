@@ -16,6 +16,7 @@ const frequencies = {
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 let substitutions = {};
 alphabet.forEach(char => substitutions[char] = '');
+let sortByFrequency = false;
 
 const select = document.getElementById('language-select');
 const inputText = document.getElementById('input-text');
@@ -27,6 +28,7 @@ const langLabel = document.getElementById('current-lang-label');
 const resetBtn = document.getElementById('reset-btn');
 const sampleBtn = document.getElementById('sample-btn');
 const copyBtn = document.getElementById('copy-btn');
+const sortBtn = document.getElementById('sort-btn');
 
 const samples = {
     en: "YKTJXTEBN QFQSNLOL OL WQLTR GF ZIT YQTZ ZIQZ, OF QFN UOCEF LZKTZEI GY VKOZZTF SQFUXQUT, ETKZQOF STZZTKL QFR EGDWOFQZOGFL GY STZZTKL GEEXK VOZI CQKN OFU YKTJXTEBORTL. DGKTGCTK, ZITKT OL Q EIQKQEZTKOLZOE ROLLZKOXXZOGF GY STZZTKL ZIQZ OL KGXUISH ZIT LQDT YGK QSDGLZ QSS LQDRSTL GY ZIQZ SQFUXQUT.",
@@ -99,7 +101,12 @@ function renderChart(container, data) {
     container.innerHTML = '';
     const maxFreq = Math.max(...Object.values(data), 1);
 
-    alphabet.forEach(char => {
+    let displayOrder = [...alphabet];
+    if (sortByFrequency) {
+        displayOrder.sort((a, b) => (data[b] || 0) - (data[a] || 0));
+    }
+
+    displayOrder.forEach(char => {
         const freq = data[char] || 0;
         const height = (freq / maxFreq) * 100;
 
@@ -201,6 +208,12 @@ function attachEventListeners() {
                 copyBtn.textContent = originalText;
             }, 2000);
         });
+    });
+
+    sortBtn.addEventListener('click', () => {
+        sortByFrequency = !sortByFrequency;
+        sortBtn.textContent = sortByFrequency ? 'Sort: Frequency' : 'Sort: A-Z';
+        updateCharts();
     });
 }
 
