@@ -17,6 +17,12 @@ const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 let substitutions = {};
 alphabet.forEach(char => substitutions[char] = '');
 let sortByFrequency = false;
+let isSampleLoaded = false;
+let currentSampleLanguage = null;
+
+// Cipher alphabet for consistent encryption
+const PLAIN_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const CIPHER_ALPHABET = 'QWERTYUIOPASDFGHJKLZXCVBNM';
 
 const select = document.getElementById('language-select');
 const inputText = document.getElementById('input-text');
@@ -30,12 +36,36 @@ const sampleBtn = document.getElementById('sample-btn');
 const copyBtn = document.getElementById('copy-btn');
 const sortBtn = document.getElementById('sort-btn');
 
-const samples = {
-    en: "YKTJXTFEN QFQSNLOL OL WQLTR GF ZIT YQEZ ZIQZ, IN QFN UOVTF LZKTZII GY VKIZZTF SQFUXQUT, ETKZQIF STZZTKL QFR EGDWOFQZOGFL GY STZZTKL GEEXK VOZI CQKNIFU YKTJXTFETL. DGKTGCTK, ZITKT OL Q EIQKQEZTKOLZIT ROLZKOXXZOGF GY STZZTKL ZIQZ OL KGXUISH ZIT LQDT YGK QSDGLZ QSS LQDHSLS GY ZIQZ SQFUXQUT.",
-    es: "TS QFQSNLOL RT YKTETFEIOQ LT WQLQ TF TS IEIOG RT JXT, TF EXQSJXOTK LZTDFZOG RT LZFUXQPT TLEKIZG, EOTKZQL LZZKQL N EGDWOFQEOGFTL RT LZZKQL GEEKKTF EGF RTZTKDIFQRL YKTETFEIOQL. QRTDQL, IN XFQ ROLLZKOXUEOGF EQKQEZTOKOLZOEQ RT STZKQL JXT TL QHKGBODQRQDTFZT SQ DOLDQ HQKQ EQLO ZGRGL SGL DXTLZKGL RT STFUXQPT.",
-    fr: "S'QFQSNTT RT YKTJXTEET TLZ WQLTT LXK ST YQOZ JXT, RQFL FG'DHGKZT JXTST TZTFRXT RT SQFUXT TEKOZT, ETKZQOFTL LZZKQL TZ EGDWOFQOLGFL RT LZZKQL LT HKG RXOL TFZ QCTE RTL YKTJXTEETL CQKOQWSTT. RT H战士L, OS TO LZZ XFT ROLLZKOXXZOGF EIQKQEZTKOLLOJXT RT LZZKQL JXO TLZ Q HHKTB HKTL SQ DTTT HGXK HKTLJXT ZGXL S'TEIQFZOSSGFL RT ETZZT SQFUXT.",
-    de: "ROT YKTJXTE MQFQSNLT WQLOTKZ QXY RTK ZQZLQZIT, RQLS OF PTRTD WTSOTXOUTT QWLZIFOZZ ROFLROUHKQEIT, WTLZODDZT WXEIZQX TF XFR AGDWOFQZOGFTF CGT WXEIZQX TF DOZ XFZTKEIORTSOTITF YKTJXTE MTF QXYRKTZTF. RXKRKRTD IOFQXE UXWZ TL TOFT EIQKQAZTKOLLOLEIT CIKZTOX XFU CGT WXEIZQX TF, ROT YXK YQLZ QSSL LZGEIHKGWTF ROTLTK LHKQEIT DQIT ROF RTSTWTS.",
+// Cipher function to encrypt text with consistent substitution
+function encryptText(plaintext) {
+    return plaintext.toUpperCase().split('').map(char => {
+        const index = PLAIN_ALPHABET.indexOf(char);
+        return index >= 0 ? CIPHER_ALPHABET[index] : char;
+    }).join('');
+}
+
+// Original plain text samples
+const plainSamples = {
+    en: "FREQUENCY ANALYSIS IS BASED ON THE FACT THAT, IN ANY GIVEN STRETCH OF WRITTEN LANGUAGE, CERTAIN LETTERS AND COMBINATIONS OF LETTERS OCCUR WITH VARYING FREQUENCIES. MOREOVER, THERE IS A CHARACTERISTIC DISTRIBUTION OF LETTERS THAT IS ROUGHLY THE SAME FOR ALMOST ALL SAMPLES OF THAT LANGUAGE.",
+    es: "EL ANALISIS DE FRECUENCIA SE BASA EN EL HECHO DE QUE, EN CUALQUIER SEGMENTO DE LENGUAJE ESCRITO, CIERTAS LETRAS Y COMBINACIONES DE LETRAS OCURREN CON DETERMINADAS FRECUENCIAS. ADEMAS, HAY UNA DISTRIBUCION CARACTERISTICA DE LETRAS QUE ES APROXIMADAMENTE LA MISMA PARA CASI TODOS LOS MUESTROS DE LENGUAJE.",
+    fr: "L'ANALYSE DE FREQUENCE EST BASEE SUR LE FAIT QUE, DANS N'IMPORTE QUELLE ETENDUE DE LANGUE ECRITE, CERTAINES LETTRES ET COMBINAISONS DE LETTRES SE PRODUISENT AVEC DES FREQUENCES VARIABLES. DE PLUS, IL EXISTE UNE DISTRIBUTION CARACTERISTIQUE DE LETTRES QUI EST APPROXIMATIVEMENT LA MEME POUR PRESQUE TOUS L'ECHANTILLONS DE CETTE LANGUE.",
+    de: "DIE FREQUENZ ANALYSE BASIERT AUF DER TATSACHE, DASS IN JEDEM BELIEBIGEN ABSCHNITT DURCHSPRACHE, BESTIMMTE BUCHSTABEN UND KOMBINATIONEN VON BUCHSTABEN MIT UNTERSCHIEDLICHEN FREQUENZEN AUFTRETEN. DARDARDEM HINAUS GIBT ES EINE CHARAKTERISTISCHES VERTEILUNG VON BUCHSTABEN, DIE FUR FAST ALLE STICHPROBEN DIESER SPRACHE MACHT DIN DELEBEL."
 };
+
+// Encrypted samples (generated using the cipher)
+const samples = {
+    en: encryptText(plainSamples.en),
+    es: encryptText(plainSamples.es),
+    fr: encryptText(plainSamples.fr),
+    de: encryptText(plainSamples.de)
+};
+
+// Solution mappings: encrypted letter -> plain letter (reverse mapping for decryption)
+const solutionMappings = {};
+for (let i = 0; i < CIPHER_ALPHABET.length; i++) {
+    solutionMappings[CIPHER_ALPHABET[i]] = PLAIN_ALPHABET[i];
+}
+
 
 function init() {
     setupSubstitutionGrid();
@@ -75,6 +105,7 @@ function setupSubstitutionGrid() {
                 input.classList.remove('filled');
             }
             updateDecodedDisplay();
+            updateValidationUI();
         });
 
         inner.appendChild(label);
@@ -147,6 +178,99 @@ function analyzeFrequency(text) {
     return freqs;
 }
 
+// Validate current substitutions against the solution
+function validateSubstitutions() {
+    if (!isSampleLoaded) return null;
+    
+    let correct = 0;
+    let total = 0;
+    const validationResults = {};
+    
+    // Get unique letters in the encrypted sample
+    const encryptedText = inputText.value.toUpperCase().replace(/[^A-Z]/g, '');
+    const uniqueLetters = [...new Set(encryptedText)];
+    
+    uniqueLetters.forEach(encryptedChar => {
+        total++;
+        const userSub = substitutions[encryptedChar];
+        const correctSub = solutionMappings[encryptedChar];
+        
+        if (userSub && userSub.toUpperCase() === correctSub) {
+            correct++;
+            validationResults[encryptedChar] = 'correct';
+        } else if (userSub) {
+            validationResults[encryptedChar] = 'incorrect';
+        } else {
+            validationResults[encryptedChar] = 'empty';
+        }
+    });
+    
+    return { correct, total, validationResults, accuracy: total > 0 ? (correct / total * 100).toFixed(0) : 0 };
+}
+
+// Update validation UI
+function updateValidationUI() {
+    const statusElement = document.getElementById('validation-status');
+    const showSolutionBtn = document.getElementById('show-solution-btn');
+    
+    if (!isSampleLoaded) {
+        if (statusElement) statusElement.style.display = 'none';
+        if (showSolutionBtn) showSolutionBtn.disabled = true;
+        // Remove all validation classes
+        document.querySelectorAll('.sub-input').forEach(input => {
+            input.classList.remove('correct', 'incorrect');
+        });
+        return;
+    }
+    
+    if (showSolutionBtn) showSolutionBtn.disabled = false;
+    
+    const validation = validateSubstitutions();
+    if (validation && statusElement) {
+        statusElement.style.display = 'block';
+        statusElement.innerHTML = `
+            <span class="status-correct">Correct: ${validation.correct}/${validation.total}</span>
+            <span class="status-accuracy">Accuracy: ${validation.accuracy}%</span>
+        `;
+        
+        // Update input box colors
+        document.querySelectorAll('.sub-input').forEach(input => {
+            const char = input.dataset.char;
+            const result = validation.validationResults[char];
+            
+            input.classList.remove('correct', 'incorrect');
+            if (result === 'correct') {
+                input.classList.add('correct');
+            } else if (result === 'incorrect') {
+                input.classList.add('incorrect');
+            }
+        });
+    }
+}
+
+// Show solution for current sample
+function showSolution() {
+    if (!isSampleLoaded) return;
+    
+    if (!confirm('Are you sure? This will reveal the complete solution.')) {
+        return;
+    }
+    
+    // Fill in all correct substitutions
+    const encryptedText = inputText.value.toUpperCase().replace(/[^A-Z]/g, '');
+    const uniqueLetters = [...new Set(encryptedText)];
+    
+    uniqueLetters.forEach(encryptedChar => {
+        const correctSub = solutionMappings[encryptedChar];
+        substitutions[encryptedChar] = correctSub;
+    });
+    
+    // Update UI
+    setupSubstitutionGrid();
+    updateDecodedDisplay();
+    updateValidationUI();
+}
+
 function updateDecodedDisplay() {
     const text = inputText.value;
     decodedDisplay.innerHTML = '';
@@ -180,23 +304,38 @@ function attachEventListeners() {
     });
 
     inputText.addEventListener('input', () => {
+        // Check if current text matches a sample
+        const currentText = inputText.value;
+        isSampleLoaded = Object.values(samples).some(sample => sample === currentText);
+        currentSampleLanguage = isSampleLoaded ? Object.keys(samples).find(key => samples[key] === currentText) : null;
+        
         updateCharts();
         updateDecodedDisplay();
+        updateValidationUI();
     });
 
     resetBtn.addEventListener('click', () => {
         inputText.value = '';
         alphabet.forEach(char => substitutions[char] = '');
+        isSampleLoaded = false;
+        currentSampleLanguage = null;
         setupSubstitutionGrid();
         updateCharts();
         updateDecodedDisplay();
+        updateValidationUI();
     });
 
     sampleBtn.addEventListener('click', () => {
         const lang = select.value;
         inputText.value = samples[lang] || samples['en'];
+        isSampleLoaded = true;
+        currentSampleLanguage = lang;
+        // Clear substitutions when loading a new sample
+        alphabet.forEach(char => substitutions[char] = '');
+        setupSubstitutionGrid();
         updateCharts();
         updateDecodedDisplay();
+        updateValidationUI();
     });
 
     copyBtn.addEventListener('click', () => {
@@ -215,6 +354,12 @@ function attachEventListeners() {
         sortBtn.textContent = sortByFrequency ? 'Sort: Frequency' : 'Sort: A-Z';
         updateCharts();
     });
+    
+    // Show Solution button
+    const showSolutionBtn = document.getElementById('show-solution-btn');
+    if (showSolutionBtn) {
+        showSolutionBtn.addEventListener('click', showSolution);
+    }
 }
 
 init();
