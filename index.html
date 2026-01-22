@@ -29,6 +29,7 @@
                 </select>
                 <button id="sort-btn" class="btn">Sort: A-Z</button>
                 <button id="sample-btn" class="btn">Load Sample</button>
+                <button id="show-solution-btn" class="btn" disabled>Show Solution</button>
                 <button id="reset-btn" class="btn">Reset All</button>
             </div>
         </header>
@@ -43,6 +44,9 @@
                 <div class="card substitution-card">
                     <label>Substitution Tool</label>
                     <p class="hint">Map an <strong>Encrypted</strong> letter to a <strong>Decoded</strong> letter.</p>
+                    <div id="validation-status" class="validation-status" style="display: none;">
+                        <!-- Validation feedback will be inserted here -->
+                    </div>
                     <div id="substitution-grid" class="substitution-grid">
                         <!-- JS will populate this -->
                     </div>

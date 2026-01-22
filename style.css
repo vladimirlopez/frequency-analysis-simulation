@@ -232,6 +232,29 @@ select.btn {
     gap: 8px;
 }
 
+.validation-status {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.status-correct {
+    color: var(--mapped-color);
+    font-weight: 600;
+}
+
+.status-accuracy {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
 .sub-item {
     display: flex;
     flex-direction: column;
@@ -281,6 +304,34 @@ select.btn {
 .sub-input.filled {
     border-bottom-color: var(--mapped-color);
     color: var(--mapped-color);
+}
+
+.sub-input.correct {
+    border-bottom-color: #3fb950;
+    color: #3fb950;
+    font-weight: bold;
+}
+
+.sub-input.incorrect {
+    border-bottom-color: #f85149;
+    color: #f85149;
+}
+
+/* Show Solution button styling */
+#show-solution-btn {
+    background: var(--bg-panel);
+    border-color: var(--accent-secondary);
+    color: var(--accent-secondary);
+}
+
+#show-solution-btn:hover:not(:disabled) {
+    background: rgba(0, 188, 212, 0.1);
+    border-color: var(--accent-secondary);
+}
+
+#show-solution-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Decoded View */
