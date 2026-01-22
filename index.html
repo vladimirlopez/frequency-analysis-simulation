@@ -84,6 +84,19 @@
                         <!-- Live update of substitutions -->
                     </div>
                 </div>
+
+                <div class="card">
+                    <label for="plaintext-input">Encode Message</label>
+                    <p class="hint">Type plaintext to see it encoded using the current substitution mapping.</p>
+                    <textarea id="plaintext-input" placeholder="Type plaintext here to encode..." rows="4"></textarea>
+                    <div class="view-header" style="margin-top: 1rem;">
+                        <label>Encoded Output</label>
+                        <button id="copy-encoded-btn" class="btn btn-sm">Copy Encoded</button>
+                    </div>
+                    <div id="encoded-display" class="decoded-display">
+                        <!-- Live encoded output -->
+                    </div>
+                </div>
             </section>
         </main>
     </div>
