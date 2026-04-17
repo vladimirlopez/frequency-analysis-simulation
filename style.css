@@ -1,4 +1,5 @@
 :root {
+
   --bg-950: #e9f4fb;
   --bg-900: #fff4dd;
   --bg-800: #ffffff;
@@ -27,6 +28,7 @@
 
     --mapped-color: #3fb950;
     --accent-glow: #58a6ff33;
+
 }
 
 .accent-text {
