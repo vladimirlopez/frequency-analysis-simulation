@@ -24,14 +24,17 @@ const standardChart = document.getElementById('standard-chart');
 const messageChart = document.getElementById('message-chart');
 const substitutionGrid = document.getElementById('substitution-grid');
 const decodedDisplay = document.getElementById('decoded-display');
+const plaintextInput = document.getElementById('plaintext-input');
+const encodedDisplay = document.getElementById('encoded-display');
 const langLabel = document.getElementById('current-lang-label');
 const resetBtn = document.getElementById('reset-btn');
 const sampleBtn = document.getElementById('sample-btn');
 const copyBtn = document.getElementById('copy-btn');
+const copyEncodedBtn = document.getElementById('copy-encoded-btn');
 const sortBtn = document.getElementById('sort-btn');
 
 const samples = {
-    en: "YKTJXTFEN QFQSNLOL OL WQLTR GF ZIT YQEZ ZIQZ, IN QFN UOVTF LZKTZII GY VKIZZTF SQFUXQUT, ETKZQIF STZZTKL QFR EGDWOFQZOGFL GY STZZTKL GEEXK VOZI CQKNIFU YKTJXTFETL. DGKTGCTK, ZITKT OL Q EIQKQEZTKOLZIT ROLZKOXXZOGF GY STZZTKL ZIQZ OL KGXUISH ZIT LQDT YGK QSDGLZ QSS LQDHSLS GY ZIQZ SQFUXQUT.",
+    en: "GRTCVTOJD QOQSDYPY PY MQYTZ XO EKT GQJE EKQE, PO QOD FPHTO YERTEJK XG IRPEETO SQOFVQFT, JTREQPO STEETRY QOZ JXBMPOQEPXOY XG STEETRY XJJVR IPEK HQRDPOF GRTCVTOJPTY. BXRTXHTR, EKTRT PY Q JKQRQJETRPYEPJ ZPYERPMVEPXO XG STEETRY EKQE PY RXVFKSD EKT YQBT GXR QSBXYE QSS YQBNSTY XG EKQE SQOFVQFT.",
     es: "TS QFQSNLOL RT YKTETFEIOQ LT WQLQ TF TS IEIOG RT JXT, TF EXQSJXOTK LZTDFZOG RT LZFUXQPT TLEKIZG, EOTKZQL LZZKQL N EGDWOFQEOGFTL RT LZZKQL GEEKKTF EGF RTZTKDIFQRL YKTETFEIOQL. QRTDQL, IN XFQ ROLLZKOXUEOGF EQKQEZTOKOLZOEQ RT STZKQL JXT TL QHKGBODQRQDTFZT SQ DOLDQ HQKQ EQLO ZGRGL SGL DXTLZKGL RT STFUXQPT.",
     fr: "S'QFQSNTT RT YKTJXTEET TLZ WQLTT LXK ST YQOZ JXT, RQFL FG'DHGKZT JXTST TZTFRXT RT SQFUXT TEKOZT, ETKZQOFTL LZZKQL TZ EGDWOFQOLGFL RT LZZKQL LT HKG RXOL TFZ QCTE RTL YKTJXTEETL CQKOQWSTT. RT H战士L, OS TO LZZ XFT ROLLZKOXXZOGF EIQKQEZTKOLLOJXT RT LZZKQL JXO TLZ Q HHKTB HKTL SQ DTTT HGXK HKTLJXT ZGXL S'TEIQFZOSSGFL RT ETZZT SQFUXT.",
     de: "ROT YKTJXTE MQFQSNLT WQLOTKZ QXY RTK ZQZLQZIT, RQLS OF PTRTD WTSOTXOUTT QWLZIFOZZ ROFLROUHKQEIT, WTLZODDZT WXEIZQX TF XFR AGDWOFQZOGFTF CGT WXEIZQX TF DOZ XFZTKEIORTSOTITF YKTJXTE MTF QXYRKTZTF. RXKRKRTD IOFQXE UXWZ TL TOFT EIQKQAZTKOLLOLEIT CIKZTOX XFU CGT WXEIZQX TF, ROT YXK YQLZ QSSL LZGEIHKGWTF ROTLTK LHKQEIT DQIT ROF RTSTWTS.",
@@ -75,6 +78,7 @@ function setupSubstitutionGrid() {
                 input.classList.remove('filled');
             }
             updateDecodedDisplay();
+            updateEncodedDisplay();
         });
 
         inner.appendChild(label);
@@ -174,6 +178,42 @@ function updateDecodedDisplay() {
     }
 }
 
+function updateEncodedDisplay() {
+    const text = plaintextInput.value;
+    encodedDisplay.innerHTML = '';
+    
+    // Create reverse mapping from decoded letter to encrypted letter
+    const reverseSubstitutions = {};
+    for (const encryptedChar in substitutions) {
+        const decodedChar = substitutions[encryptedChar];
+        if (decodedChar) {
+            reverseSubstitutions[decodedChar] = encryptedChar;
+        }
+    }
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const upperChar = char.toUpperCase();
+
+        if (alphabet.includes(upperChar)) {
+            const encoded = reverseSubstitutions[upperChar];
+            const span = document.createElement('span');
+            span.className = 'decoded-char';
+
+            if (encoded) {
+                span.textContent = encoded;
+                span.classList.add('substituted');
+            } else {
+                span.textContent = char;
+            }
+            encodedDisplay.appendChild(span);
+        } else {
+            const node = document.createTextNode(char);
+            encodedDisplay.appendChild(node);
+        }
+    }
+}
+
 function attachEventListeners() {
     select.addEventListener('change', () => {
         updateCharts();
@@ -186,10 +226,12 @@ function attachEventListeners() {
 
     resetBtn.addEventListener('click', () => {
         inputText.value = '';
+        plaintextInput.value = '';
         alphabet.forEach(char => substitutions[char] = '');
         setupSubstitutionGrid();
         updateCharts();
         updateDecodedDisplay();
+        updateEncodedDisplay();
     });
 
     sampleBtn.addEventListener('click', () => {
@@ -214,6 +256,21 @@ function attachEventListeners() {
         sortByFrequency = !sortByFrequency;
         sortBtn.textContent = sortByFrequency ? 'Sort: Frequency' : 'Sort: A-Z';
         updateCharts();
+    });
+
+    plaintextInput.addEventListener('input', () => {
+        updateEncodedDisplay();
+    });
+
+    copyEncodedBtn.addEventListener('click', () => {
+        const text = encodedDisplay.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = copyEncodedBtn.textContent;
+            copyEncodedBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyEncodedBtn.textContent = originalText;
+            }, 2000);
+        });
     });
 }
 
